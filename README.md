@@ -10,7 +10,9 @@ Output.txt
   This file contains sample output from a run of our program.
 Report1.docx
   This report contains information about our approach, rationale, difficulties, and assumptions.
-  
+makefile
+  This contains all of the python command line commands for executing the program. Simply typing make should execute the program.
   
 To Run: 
-  From the command line >python main.py
+  From the command line >make
+
