@@ -14,3 +14,6 @@ Report1.docx
   
 To Run: 
   From the command line >python main.py
+
+
+To View Output:  Open output.txt or from command line, >less output.txt
