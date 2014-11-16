@@ -8,11 +8,15 @@ from collections import defaultdict
 bigramObject = nltk.collocations.BigramAssocMeasures()
 stopWords= stopwords.words("english")
 
+docID = 1
+
 
 def main(): 
   # All program output will be placed in output.txt
-  outputfile = open("output.txt","w")
+  outputfile = open("out.txt","w")
 
+  
+  docID = 1
   # Created an array for the different doc numbers to make looping easer
   for x in ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21"]:
     processDoc("reut2-0" + x + ".sgm", outputfile)
@@ -63,20 +67,25 @@ def listPrint(list):
   return "<" + ",".join(list) + ">"
 
 # Function that will do the majority of processing for each individual document
+#docID is where numbering will begin
 def processDoc(filename, outputfile):
   document = BeautifulSoup(open(filename), 'html.parser')
   all_articles = document.find_all('reuters')
 
   # Iterate through all articles in single document.  Article is defined as anything between a set of <REUTER></REUTER> tags
+  
   for article in all_articles:
     topics = article.topics
     places = article.places
+    global docID
 
+    
     # topicItems is a tree containing topic data children
     # lamda d represents each child in topics.find_all('d')
 
     # topicItems now contains a list of all items
     topicItems = map(lambda d: d.contents[0], topics.find_all('d'))
+
 
     # placeItems now contains a list of all items
     placeItems = map (lambda p: p.contents[0], places.find_all('d'))
@@ -86,7 +95,7 @@ def processDoc(filename, outputfile):
     #contains feature vector with all stop words removed
     stopWordsFV = defaultdict(lambda: 0, {})
 
-    if article.body:
+    if article.body and len(topicItems) > 0:
       # Remove punctuation & convert text to lowercase
       articleText = removePunctuation(article.body.contents[0].lower())
       # Remove short words
@@ -99,7 +108,7 @@ def processDoc(filename, outputfile):
       # Contains feature vector of bigrams w/o stop words removed
       # Most common sets of two words that occur near each other
       bigramFinder = BigramCollocationFinder.from_words(articleText.split(" "))
-      bigramFV = map(lambda x: " ".join(x), bigramFinder.nbest(bigramObject.pmi, 10))
+      bigramFV = map(lambda x: " ".join(x), bigramFinder.nbest(bigramObject.pmi, 5))
 
       # Remove stop words for next feature vector
       articleText = removeStopWords(articleText)
@@ -108,18 +117,16 @@ def processDoc(filename, outputfile):
         stopWordsFV[word] += 1
 
       # Output FV and topics n stuff to file the way we want it to look
-      outputfile.write(article["newid"])    
+      #if len(topicItems) > 0:
+        #outputfile.write(str(docID)
+      outputfile.write(str(docID))
       outputfile.write(" ")
       outputfile.write(listPrint(topicItems))
       outputfile.write(" ")
       outputfile.write(listPrint(placeItems))
       outputfile.write(" ")
-      outputfile.write(listPrint(bigramFV))
-      outputfile.write(" ")
-      outputfile.write(listPrint(map(lambda word: "(" + word + "," + str(stopWordsFV[word]) + ")", stopWordsFV)))
-      outputfile.write("\n")
-      outputfile.write("\n")
-
+      outputfile.write(listPrint(bigramFV)+"\n")
+      docID += 1
 
 
 main()
